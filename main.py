@@ -150,7 +150,7 @@ with tf.Session() as sess:
             [model.optimizer, model.all_summaries],
             feed_dict={model.messages: batch_x, model.senders: batch_y})
 
-        summary_train_writer.add_summary(train_summaries)
+        summary_train_writer.add_summary(train_summaries, step)
 
         if step % display_step == 0:
             acc, loss, test_summaries = sess.run(
