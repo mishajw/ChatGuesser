@@ -128,7 +128,12 @@ with tf.Session() as sess:
     inputs, outputs, test_inputs, test_outputs, name_set = data.get_data(training_percentage, max_sequence_length)
 
     now = datetime.now()
-    summary_writer = tf.train.SummaryWriter("/tmp/tb_chat_guesser/" + now.strftime("%Y%m%d-%H%M%S"), sess.graph)
+    summary_train_writer = tf.train.SummaryWriter(
+        "/tmp/tb_chat_guesser/" + now.strftime("%Y%m%d-%H%M%S") + "/train",
+        sess.graph)
+    summary_test_writer = tf.train.SummaryWriter(
+        "/tmp/tb_chat_guesser/" + now.strftime("%Y%m%d-%H%M%S") + "/test",
+        sess.graph)
 
     while step < training_iters:
         batch_step = step % int(len(outputs) / batch_size)
@@ -141,13 +146,18 @@ with tf.Session() as sess:
             outputs[batch_step * batch_size:(batch_step + 1) * batch_size]
         )
 
-        sess.run(model.optimizer, feed_dict={model.messages: batch_x, model.senders: batch_y})
+        _, train_summaries = sess.run(
+            [model.optimizer, model.all_summaries],
+            feed_dict={model.messages: batch_x, model.senders: batch_y})
+
+        summary_train_writer.add_summary(train_summaries)
 
         if step % display_step == 0:
-            acc, loss, summaries = sess.run([model.accuracy, model.cost, model.all_summaries],
-                                            feed_dict={model.messages: inputs, model.senders: outputs})
+            acc, loss, test_summaries = sess.run(
+                [model.accuracy, model.cost, model.all_summaries],
+                feed_dict={model.messages: inputs, model.senders: outputs})
 
             print("Acc: %.5f, Loss: %.5f" % (acc, loss))
-            summary_writer.add_summary(summaries, step)
+            summary_test_writer.add_summary(test_summaries, step)
 
         step += 1
