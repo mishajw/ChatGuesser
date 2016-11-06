@@ -16,11 +16,20 @@ display_step = 10
 now = datetime.now()
 path = "/tmp/tb_chat_guesser/" + now.strftime("%Y%m%d-%H%M%S")
 
+
 def main():
     model = ChatGuesserModel(max_sequence_length)
+
+    saver = tf.train.Saver()
+    checkpoint = tf.train.get_checkpoint_state(path + "/checkpoint")
+
     init = tf.initialize_all_variables()
 
     with tf.Session() as sess:
+        # Try and restore variables
+        if checkpoint and checkpoint.model_checkpoint_path:
+            saver.restore(sess, checkpoint.model_checkpoint_path)
+
         sess.run(init)
         step = 1
 
