@@ -9,6 +9,10 @@ import data
 
 class ChatGuesserModel:
     def __init__(self, max_sequence_length):
+        """
+        Create the model
+        :param max_sequence_length: the maximum length of each message input
+        """
         self.learning_rate = 0.0001
         self.max_sequence_length = max_sequence_length
 
@@ -16,30 +20,37 @@ class ChatGuesserModel:
         self.num_hidden = 64
         self.num_chars = 128
 
+        # Input and output to get from feed_dict
         self.messages = tf.placeholder("float", [None, self.max_sequence_length], name="input")
         self.senders = tf.placeholder("float", [None], name="output")
 
-        self.weights = tf.Variable(tf.random_normal([self.num_hidden, self.num_classes]))
-        self.biases = tf.Variable(tf.random_normal([self.num_classes]))
+        # Variables for final softmax layer
+        weights = tf.Variable(tf.random_normal([self.num_hidden, self.num_classes]))
+        biases = tf.Variable(tf.random_normal([self.num_classes]))
 
-        self.optimizer = None
-        self.accuracy = None
-        self.cost = None
+        # Get the prediction
+        pred = self.message_rnn(self.messages, weights, biases)
 
-        self.model()
-
-    def model(self):
-        pred = self.message_rnn(self.messages, self.weights, self.biases)
-
+        # Get the cost of the prediction
         output_one_hot = tf.one_hot(tf.cast(self.senders, tf.int32), 18, axis=1)
         softmax = tf.nn.softmax_cross_entropy_with_logits(pred, output_one_hot)
         self.cost = tf.reduce_mean(softmax)
+
+        # Optimize based off the cost
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(self.cost)
 
+        # Calculate the accuracy (only for tracking progress)
         correct_pred = tf.equal(tf.argmax(pred, 1), tf.argmax(output_one_hot, 1))
         self.accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
     def message_rnn(self, x, w, b):
+        """
+        Get an RNN for dealing with messages
+        :param x: `Tensor` of messages
+        :param w: `Tensor` of weights for softmax
+        :param b: `Tensor` of biases for softmax
+        :return: the prediction for each message
+        """
         x = tf.one_hot(tf.cast(x, tf.int32), self.num_chars, axis=2)
 
         lstm_cell = rnn_cell.BasicLSTMCell(self.num_hidden, state_is_tuple=True, forget_bias=1.0)
@@ -50,14 +61,29 @@ class ChatGuesserModel:
 
         return tf.nn.softmax(logits)
 
-    def get_last_output(self, outputs):
+    @staticmethod
+    def get_last_output(outputs):
+        """
+        Get the last output of each element in outputs
+        Members of outputs may be zero-padded at the end
+        :param outputs: list of outputs from an RNN
+        :return: last elements of each of outputs
+        """
+
         last_index = tf.shape(outputs)[1] - 1
         outputs_rs = tf.transpose(outputs, [1, 0, 2])
 
         # TODO: find out what this does
         return tf.nn.embedding_lookup(outputs_rs, last_index)
 
-    def real_length(self, sequence):
+    @staticmethod
+    def real_length(sequence):
+        """
+        Get the real length of every element in `sequence`
+        `sequence` may be zero-padded at end
+        :param sequence: list of zero-padded tensors
+        :return: lengths
+        """
         used = tf.sign(tf.reduce_max(tf.abs(sequence), reduction_indices=2))
         length = tf.reduce_sum(used, reduction_indices=1)
         length = tf.cast(length, tf.int32)
