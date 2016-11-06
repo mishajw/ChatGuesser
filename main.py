@@ -68,7 +68,7 @@ max_sequence_length = 50
 batch_size = 64
 training_percentage = 0.9
 training_iters = 1e4
-display_step = 10
+display_step = 50
 
 model = ChatGuesserModel(max_sequence_length)
 init = tf.initialize_all_variables()
@@ -92,8 +92,6 @@ with tf.Session() as sess:
             continue
 
         sess.run(model.optimizer, feed_dict={model.messages: batch_x, model.senders: batch_y})
-
-        print(step)
 
         if step % display_step == 0:
             acc, loss = sess.run([model.accuracy, model.cost], feed_dict={model.messages: test_inputs, model.senders: test_outputs})
