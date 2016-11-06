@@ -14,12 +14,13 @@ class ChatGuesserModel:
         Create the model
         :param max_sequence_length: the maximum length of each message input
         """
-        self.learning_rate = 0.01
+        self.learning_rate = 0.0001
         self.max_sequence_length = max_sequence_length
 
         self.num_classes = 13
         self.num_hidden = 64
-        self.num_chars = 64
+        self.num_layers = 5
+        self.num_chars = 128
 
         # Input and output to get from feed_dict
         self.messages = tf.placeholder("float", [None, self.max_sequence_length, self.num_chars], name="input")
@@ -63,7 +64,8 @@ class ChatGuesserModel:
 
         with tf.name_scope("rnn_main"):
             lstm_cell = rnn_cell.BasicLSTMCell(self.num_hidden, state_is_tuple=True, forget_bias=1.0)
-            outputs, state = rnn.dynamic_rnn(lstm_cell, x, dtype=tf.float32, sequence_length=self.real_length(x))
+            multi_cell = rnn_cell.MultiRNNCell([lstm_cell] * self.num_layers, state_is_tuple=True)
+            outputs, state = rnn.dynamic_rnn(multi_cell, x, dtype=tf.float32, sequence_length=self.real_length(x))
 
             output = self.get_last_output(outputs)
             return tf.matmul(output, w) + b
@@ -112,7 +114,7 @@ class ChatGuesserModel:
 
 max_sequence_length = 50
 batch_size = 64
-training_percentage = 0.01
+training_percentage = 0.75
 training_iters = 1e4
 display_step = 10
 
