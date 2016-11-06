@@ -20,6 +20,7 @@ output_sender = tf.placeholder("float", [batch_size, num_classes], name="output"
 weights = tf.Variable(tf.random_normal([num_hidden, num_classes]))
 biases = tf.Variable(tf.random_normal([num_classes]))
 
+
 def message_rnn(x, w, b):
     x = tf.split(1, sequence_length, x)
     x = [tf.squeeze(x_, [1]) for x_ in x]
@@ -29,9 +30,9 @@ def message_rnn(x, w, b):
     output = outputs[-1]
 
     logits = tf.matmul(output, w) + b
-    pred = tf.nn.softmax(logits)
 
-    return pred
+    return tf.nn.softmax(logits)
+
 
 pred = message_rnn(input_message, weights, biases)
 
