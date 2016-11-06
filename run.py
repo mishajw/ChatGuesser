@@ -13,6 +13,8 @@ training_percentage = 0.75
 training_iters = 1e4
 display_step = 10
 
+now = datetime.now()
+path = "/tmp/tb_chat_guesser/" + now.strftime("%Y%m%d-%H%M%S")
 
 def main():
     model = ChatGuesserModel(max_sequence_length)
@@ -56,11 +58,9 @@ def main():
 
 
 def get_writers(sess):
-    now = datetime.now()
-
     def writer(name):
         return tf.train.SummaryWriter(
-            "/tmp/tb_chat_guesser/" + now.strftime("%Y%m%d-%H%M%S") + "/" + name,
+            path + "/" + name,
             sess.graph)
 
     return writer("train"), writer("test")
