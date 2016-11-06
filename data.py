@@ -25,6 +25,9 @@ def get_data(training_percentage, message_length):
         name_set = list(set(outputs))
         outputs = [name_set.index(o) for o in outputs]
 
+        inputs = [one_hot(message, 128) for message in inputs]
+        outputs = one_hot(outputs, len(name_set))
+
         training_amount = int(len(inputs) * training_percentage)
 
         return \
@@ -33,3 +36,15 @@ def get_data(training_percentage, message_length):
             inputs[training_amount:], \
             outputs[training_amount:], \
             name_set
+
+
+def one_hot(xs, amount):
+    def one_hot_single(x):
+        vec = [0] * amount
+        if x >= amount:
+            return vec
+
+        vec[x] = 1
+        return vec
+
+    return [one_hot_single(x) for x in xs]
