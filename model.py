@@ -38,7 +38,9 @@ class ChatGuesserModel:
 
         # Calculate the accuracy (only for tracking progress)
         with tf.name_scope("accuracy"):
-            correct_pred = tf.equal(tf.argmax(logits, 1, name="model_guess"), tf.argmax(self.senders, 1, "truth"))
+            self.model_guess = tf.argmax(logits, 1, name="model_guess")
+            truth = tf.argmax(self.senders, 1, "truth")
+            correct_pred = tf.equal(self.model_guess, truth)
             self.accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32), name="accuracy")
 
         # Summaries for TensorBoard
@@ -47,6 +49,8 @@ class ChatGuesserModel:
             tf.scalar_summary("train/self.accuracy", self.accuracy)
             self.tensor_summary(softmax_weights)
             self.tensor_summary(softmax_biases)
+            tf.histogram_summary("train/guesses", self.model_guess)
+            tf.histogram_summary("train/truths", truth)
             self.all_summaries = tf.merge_all_summaries()
 
     def message_rnn(self, x, w, b):
