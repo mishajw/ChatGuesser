@@ -14,8 +14,8 @@ class ChatGuesserModel:
         self.max_sequence_length = max_sequence_length
 
         self.num_classes = 13
-        self.num_hidden = 64
-        self.num_layers = 5
+        self.num_hidden = 32
+        self.num_layers = 20
         self.num_chars = 128
 
         # Input and output to get from feed_dict
