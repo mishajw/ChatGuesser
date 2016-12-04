@@ -8,8 +8,6 @@ import argparse
 import data
 from model import ChatGuesserModel
 
-training_iters = 1e4
-
 now = datetime.now()
 path = "/tmp/tb_chat_guesser/" + now.strftime("%Y%m%d-%H%M%S")
 
@@ -54,7 +52,7 @@ def main():
 
         summary_train_writer, summary_test_writer = get_writers(sess)
 
-        while step < training_iters:
+        while True:
             batch_step = step % int(len(outputs) / batch_size)
 
             batch_x = np.array(
