@@ -9,7 +9,6 @@ import data
 from model import ChatGuesserModel
 
 now = datetime.now()
-path = "/tmp/tb_chat_guesser/" + now.strftime("%Y%m%d-%H%M%S")
 
 
 parser = argparse.ArgumentParser(
@@ -17,25 +16,31 @@ parser = argparse.ArgumentParser(
 parser.add_argument("--batch-size", type=int, default=64)
 parser.add_argument("--training-percentage", type=float, default=0.75)
 parser.add_argument("--display-step", type=int, default=100)
+parser.add_argument("--save-step", type=int, default=1000)
 parser.add_argument("--max-sequence-length", type=int, default=50)
 parser.add_argument("--learning-rate", type=float, default=0.0001)
 parser.add_argument("--rnn-neurons", type=int, default=16)
 parser.add_argument("--rnn-layers", type=int, default=4)
 parser.add_argument("--max-data-amount", type=int, default=int(1e6))
+parser.add_argument("--save-dir", type=str, default="/tmp/tb_chat_guesser/" + now.strftime("%Y%m%d-%H%M%S"))
 
 
 def main():
     args = parser.parse_args()
+
+    path = args.save_dir
+    checkpoint_path = path + "/model.ckpt"
     max_sequence_length = args.max_sequence_length
     batch_size = args.batch_size
     training_percentage = args.training_percentage
     display_step = args.display_step
+    save_step = args.save_step
     max_data_amount = args.max_data_amount
 
     model = ChatGuesserModel(args)
 
     saver = tf.train.Saver()
-    checkpoint = tf.train.get_checkpoint_state(path + "/checkpoint")
+    checkpoint = tf.train.get_checkpoint_state(checkpoint_path)
 
     init = tf.initialize_all_variables()
 
@@ -50,7 +55,7 @@ def main():
         inputs, outputs, test_inputs, test_outputs = \
             data.get_data(training_percentage, max_sequence_length, max_data_amount)
 
-        summary_train_writer, summary_test_writer = get_writers(sess)
+        summary_train_writer, summary_test_writer = get_writers(sess, path)
 
         while True:
             batch_step = step % int(len(outputs) / batch_size)
@@ -77,10 +82,13 @@ def main():
                 print("Acc: %.10f, Loss: %.10f" % (acc, loss))
                 summary_test_writer.add_summary(test_summaries, step)
 
+            if step % save_step == 0:
+                saver.save(sess, checkpoint_path)
+
             step += 1
 
 
-def get_writers(sess):
+def get_writers(sess, path):
     def writer(name):
         return tf.train.SummaryWriter(
             path + "/" + name,
