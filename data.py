@@ -15,6 +15,27 @@ class Data:
 def get_data(training_percentage, message_length, max_data_amount):
     print("Reading in data...")
 
+    plain_data = get_plain_data()
+    random.shuffle(plain_data)
+    plain_data = plain_data[:max_data_amount]
+    one_hot_data = get_one_hot_data(plain_data, message_length)
+    proportional_data = get_proportional_data(one_hot_data)
+
+    training_amount = int(min(len(proportional_data), max_data_amount) * training_percentage)
+
+    inputs = [d.input for d in proportional_data[:max_data_amount]]
+    outputs = [d.output for d in proportional_data[:max_data_amount]]
+
+    print("Loaded data")
+
+    return \
+        inputs[:training_amount], \
+        outputs[:training_amount], \
+        inputs[training_amount:], \
+        outputs[training_amount:]
+
+
+def get_plain_data():
     with open(data_path, 'r') as f:
         data = []
 
@@ -22,47 +43,48 @@ def get_data(training_percentage, message_length, max_data_amount):
             separator = line.index(":")
             name = line[:separator]
             message = line[separator + 2:]
-            message = [ord(m) for m in message]
-
-            if len(message) < message_length:
-                message.extend([0] * (message_length - len(message)))
-            elif len(message) > message_length:
-                message = message[:message_length]
 
             data.append(Data(message, name))
 
-        name_set = list(set([d.output for d in data]))
+    return data
 
-        # Get even amounts of data for each class
-        data.sort(key=lambda d: d.output)
-        proportional_data = []
-        data_per_group = int(len(data) / len(name_set))
-        for k, ds in groupby(data, lambda d: d.output):
-            ds = list(ds)
-            random.shuffle(ds)
-            proportional_data.extend(ds[:data_per_group])
-        random.shuffle(proportional_data)
-        data = proportional_data
 
-        data = [ \
-            Data(
-                [one_hot(c, 128) for c in d.input],
-                one_hot(name_set.index(d.output), len(name_set))) \
-            for d in data]
+def get_one_hot_data(plain_data, message_length):
+    one_hot_data = []
 
-        training_amount = int(min(len(data), max_data_amount) * training_percentage)
+    name_set = list(set([d.output for d in plain_data]))
 
-        inputs = [d.input for d in data[:max_data_amount]]
-        outputs = [d.output for d in data[:max_data_amount]]
+    for d in plain_data:
+        input = [ord(m) for m in d.input]
 
-        print("Loaded data")
+        if len(input) < message_length:
+            input.extend([0] * (message_length - len(input)))
+        elif len(input) > message_length:
+            input = input[:message_length]
 
-        return \
-            inputs[:training_amount], \
-            outputs[:training_amount], \
-            inputs[training_amount:], \
-            outputs[training_amount:], \
-            name_set
+        input = [one_hot(c, 128) for c in input]
+        output = one_hot(name_set.index(d.output), len(name_set))
+
+        one_hot_data.append(Data(input, output))
+
+    return one_hot_data
+
+
+def get_proportional_data(one_hot_data):
+    num_classes = len(one_hot_data[0].input)
+
+    one_hot_data.sort(key=lambda d: d.output)
+    data_per_group = int(len(one_hot_data) / num_classes)
+
+    proportional_data = []
+    for k, ds in groupby(one_hot_data, lambda d: d.output):
+        ds = list(ds)
+        random.shuffle(ds)
+        proportional_data.extend(ds[:data_per_group])
+
+    random.shuffle(proportional_data)
+
+    return proportional_data
 
 
 def one_hot(x, amount):

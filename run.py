@@ -23,7 +23,7 @@ parser.add_argument("--max-sequence-length", type=int, default=50)
 parser.add_argument("--learning-rate", type=float, default=0.0001)
 parser.add_argument("--rnn-neurons", type=int, default=16)
 parser.add_argument("--rnn-layers", type=int, default=4)
-parser.add_argument("--max_data_amount", type=int, default=max)
+parser.add_argument("--max-data-amount", type=int, default=int(1e6))
 
 
 def main():
@@ -49,7 +49,7 @@ def main():
         sess.run(init)
         step = 1
 
-        inputs, outputs, test_inputs, test_outputs, name_set = \
+        inputs, outputs, test_inputs, test_outputs = \
             data.get_data(training_percentage, max_sequence_length, max_data_amount)
 
         summary_train_writer, summary_test_writer = get_writers(sess)
