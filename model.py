@@ -45,12 +45,12 @@ class ChatGuesserModel:
 
         # Summaries for TensorBoard
         with tf.name_scope("summaries"):
-            tf.scalar_summary("train/self.cost", self.cost)
-            tf.scalar_summary("train/self.accuracy", self.accuracy)
+            tf.scalar_summary("cost", self.cost)
+            tf.scalar_summary("accuracy", self.accuracy)
             self.tensor_summary(softmax_weights)
             self.tensor_summary(softmax_biases)
-            tf.histogram_summary("train/guesses", self.model_guess)
-            tf.histogram_summary("train/truths", truth)
+            tf.histogram_summary("guesses", self.model_guess)
+            tf.histogram_summary("truths", truth)
             self.all_summaries = tf.merge_all_summaries()
 
     def message_rnn(self, x, w, b):
