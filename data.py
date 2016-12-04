@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import random
+from itertools import groupby
+
 data_path = "/home/misha/Dropbox/scala/chat-stats/all-messages.txt"
 
 
@@ -33,10 +36,21 @@ def get_data(training_percentage, message_length):
 
         name_set = list(set([d.output for d in data]))
 
-        data = [\
+        # Get even amounts of data for each class
+        data.sort(key=lambda d: d.output)
+        proportional_data = []
+        data_per_group = int(len(data) / len(name_set))
+        for k, ds in groupby(data, lambda d: d.output):
+            ds = list(ds)
+            random.shuffle(ds)
+            proportional_data.extend(ds[:data_per_group])
+        random.shuffle(proportional_data)
+        data = proportional_data
+
+        data = [ \
             Data(
                 [one_hot(c, 128) for c in d.input],
-                one_hot(name_set.index(d.output), len(name_set)))\
+                one_hot(name_set.index(d.output), len(name_set))) \
             for d in data]
 
         training_amount = int(min(len(data), max_data_amount) * training_percentage)
