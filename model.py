@@ -5,26 +5,27 @@ from tensorflow.python.ops import rnn, rnn_cell
 
 
 class ChatGuesserModel:
-    def __init__(self, max_sequence_length):
+    NUM_CLASSES = 18
+    NUM_CHARS = 128
+
+    def __init__(self, args):
         """
         Create the model
-        :param max_sequence_length: the maximum length of each message input
+        :param args: the command line arguments to initialise the model
         """
-        self.learning_rate = 0.0001
-        self.max_sequence_length = max_sequence_length
+        self.learning_rate = args.learning_rate
+        self.max_sequence_length = args.max_sequence_length
 
-        self.num_classes = 18
-        self.num_hidden = 32
-        self.num_layers = 20
-        self.num_chars = 128
+        self.num_hidden = args.rnn_neurons
+        self.num_layers = args.rnn_layers
 
         # Input and output to get from feed_dict
-        self.messages = tf.placeholder("float", [None, self.max_sequence_length, self.num_chars], name="input")
-        self.senders = tf.placeholder("float", [None, self.num_classes], name="output")
+        self.messages = tf.placeholder("float", [None, self.max_sequence_length, self.NUM_CHARS], name="input")
+        self.senders = tf.placeholder("float", [None, self.NUM_CLASSES], name="output")
 
         # Variables for final softmax layer
-        softmax_weights = tf.Variable(tf.random_normal([self.num_hidden, self.num_classes]), name="softmax_weights")
-        softmax_biases = tf.Variable(tf.random_normal([self.num_classes]), name="softmax_biases")
+        softmax_weights = tf.Variable(tf.random_normal([self.num_hidden, self.NUM_CLASSES]), name="softmax_weights")
+        softmax_biases = tf.Variable(tf.random_normal([self.NUM_CLASSES]), name="softmax_biases")
 
         # Get the prediction
         logits = self.message_rnn(self.messages, softmax_weights, softmax_biases)

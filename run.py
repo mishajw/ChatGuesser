@@ -3,22 +3,38 @@
 import tensorflow as tf
 import numpy as np
 from datetime import datetime
+import argparse
 
 import data
 from model import ChatGuesserModel
 
-max_sequence_length = 50
-batch_size = 64
-training_percentage = 0.75
 training_iters = 1e4
-display_step = 10
 
 now = datetime.now()
 path = "/tmp/tb_chat_guesser/" + now.strftime("%Y%m%d-%H%M%S")
 
 
+parser = argparse.ArgumentParser(
+    description="Recurrent Neural Network that trains to guess the sender of a message")
+parser.add_argument("--batch-size", type=int, default=64)
+parser.add_argument("--training-percentage", type=float, default=0.75)
+parser.add_argument("--display-step", type=int, default=100)
+parser.add_argument("--max-sequence-length", type=int, default=50)
+parser.add_argument("--learning-rate", type=float, default=0.0001)
+parser.add_argument("--rnn-neurons", type=int, default=16)
+parser.add_argument("--rnn-layers", type=int, default=4)
+parser.add_argument("--max_data_amount", type=int, default=max)
+
+
 def main():
-    model = ChatGuesserModel(max_sequence_length)
+    args = parser.parse_args()
+    max_sequence_length = args.max_sequence_length
+    batch_size = args.batch_size
+    training_percentage = args.training_percentage
+    display_step = args.display_step
+    max_data_amount = args.max_data_amount
+
+    model = ChatGuesserModel(args)
 
     saver = tf.train.Saver()
     checkpoint = tf.train.get_checkpoint_state(path + "/checkpoint")
@@ -34,7 +50,7 @@ def main():
         step = 1
 
         inputs, outputs, test_inputs, test_outputs, name_set = \
-            data.get_data(training_percentage, max_sequence_length)
+            data.get_data(training_percentage, max_sequence_length, max_data_amount)
 
         summary_train_writer, summary_test_writer = get_writers(sess)
 

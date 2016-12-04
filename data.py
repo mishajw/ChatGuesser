@@ -6,16 +6,13 @@ from itertools import groupby
 data_path = "/home/misha/Dropbox/scala/chat-stats/all-messages.txt"
 
 
-max_data_amount = 20000
-
-
 class Data:
     def __init__(self, _input, _output):
         self.input = _input
         self.output = _output
 
 
-def get_data(training_percentage, message_length):
+def get_data(training_percentage, message_length, max_data_amount):
     print("Reading in data...")
 
     with open(data_path, 'r') as f:
