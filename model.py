@@ -15,6 +15,7 @@ class ChatGuesserModel:
         """
         self.learning_rate = args.learning_rate
         self.max_sequence_length = args.max_sequence_length
+        self.dropout = tf.placeholder(tf.float32)
 
         self.num_hidden = args.rnn_neurons
         self.num_layers = args.rnn_layers
@@ -65,7 +66,8 @@ class ChatGuesserModel:
 
         with tf.name_scope("rnn_main"):
             lstm_cell = rnn_cell.BasicLSTMCell(self.num_hidden, state_is_tuple=True, forget_bias=1.0)
-            multi_cell = rnn_cell.MultiRNNCell([lstm_cell] * self.num_layers, state_is_tuple=True)
+            dropout_cell = rnn_cell.DropoutWrapper(lstm_cell, self.dropout)
+            multi_cell = rnn_cell.MultiRNNCell([dropout_cell] * self.num_layers, state_is_tuple=True)
             outputs, state = rnn.dynamic_rnn(multi_cell, x, dtype=tf.float32, sequence_length=self.real_length(x))
 
             output = self.get_last_output(outputs)

@@ -70,14 +70,14 @@ def main():
 
             _, train_summaries = sess.run(
                 [model.optimizer, model.all_summaries],
-                feed_dict={model.messages: batch_x, model.senders: batch_y})
+                feed_dict={model.messages: batch_x, model.senders: batch_y, model.dropout: 0.5})
 
             summary_train_writer.add_summary(train_summaries, step)
 
             if step % display_step == 0:
                 acc, loss, test_summaries = sess.run(
                     [model.accuracy, model.cost, model.all_summaries],
-                    feed_dict={model.messages: test_inputs, model.senders: test_outputs})
+                    feed_dict={model.messages: test_inputs, model.senders: test_outputs, model.dropout: 1})
 
                 print("Acc: %.10f, Loss: %.10f" % (acc, loss))
                 summary_test_writer.add_summary(test_summaries, step)
