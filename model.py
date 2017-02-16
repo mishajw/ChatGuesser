@@ -6,7 +6,6 @@ from tensorflow.contrib.rnn.python.ops import core_rnn_cell_impl as rnn_cell
 
 
 class ChatGuesserModel:
-    NUM_CLASSES = 18
     NUM_CHARS = 128
 
     def __init__(self, args):
@@ -18,16 +17,17 @@ class ChatGuesserModel:
         self.max_sequence_length = args.max_sequence_length
         self.dropout = tf.placeholder(tf.float32)
 
+        self.class_amount = args.class_amount
         self.num_hidden = args.rnn_neurons
         self.num_layers = args.rnn_layers
 
         # Input and output to get from feed_dict
         self.messages = tf.placeholder("float", [None, self.max_sequence_length, self.NUM_CHARS], name="input")
-        self.senders = tf.placeholder("float", [None, self.NUM_CLASSES], name="output")
+        self.senders = tf.placeholder("float", [None, self.class_amount], name="output")
 
         # Variables for final softmax layer
-        softmax_weights = tf.Variable(tf.random_normal([self.num_hidden, self.NUM_CLASSES]), name="softmax_weights")
-        softmax_biases = tf.Variable(tf.random_normal([self.NUM_CLASSES]), name="softmax_biases")
+        softmax_weights = tf.Variable(tf.random_normal([self.num_hidden, self.class_amount]), name="softmax_weights")
+        softmax_biases = tf.Variable(tf.random_normal([self.class_amount]), name="softmax_biases")
 
         # Get the prediction
         logits = self.message_rnn(self.messages, softmax_weights, softmax_biases)

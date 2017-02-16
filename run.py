@@ -23,6 +23,7 @@ parser.add_argument("--rnn-neurons", type=int, default=16)
 parser.add_argument("--rnn-layers", type=int, default=4)
 parser.add_argument("--max-data-amount", type=int, default=int(1e6))
 parser.add_argument("--save-dir", type=str, default="/tmp/tb_chat_guesser/" + now.strftime("%Y%m%d-%H%M%S"))
+parser.add_argument("--class-amount", type=int, default=6)
 
 
 def main():
