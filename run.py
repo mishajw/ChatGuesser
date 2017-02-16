@@ -90,7 +90,7 @@ def main():
 
 def get_writers(sess, path):
     def writer(name):
-        return tf.train.SummaryWriter(
+        return tf.summary.FileWriter(
             path + "/" + name,
             sess.graph)
 

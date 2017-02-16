@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import tensorflow as tf
-from tensorflow.python.ops import rnn, rnn_cell
+from tensorflow.python.ops import rnn
+from tensorflow.contrib.rnn.python.ops import core_rnn_cell_impl as rnn_cell
 
 
 class ChatGuesserModel:
@@ -32,7 +33,7 @@ class ChatGuesserModel:
         logits = self.message_rnn(self.messages, softmax_weights, softmax_biases)
 
         # Get the cost of the prediction
-        softmax = tf.nn.softmax_cross_entropy_with_logits(logits, self.senders)
+        softmax = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=self.senders)
         self.cost = tf.reduce_mean(softmax, name="cost")
 
         # Optimize based off the cost
@@ -47,13 +48,13 @@ class ChatGuesserModel:
 
         # Summaries for TensorBoard
         with tf.name_scope("summaries"):
-            tf.scalar_summary("cost", self.cost)
-            tf.scalar_summary("accuracy", self.accuracy)
+            tf.summary.scalar("cost", self.cost)
+            tf.summary.scalar("accuracy", self.accuracy)
             self.tensor_summary(softmax_weights)
             self.tensor_summary(softmax_biases)
-            tf.histogram_summary("guesses", self.model_guess)
-            tf.histogram_summary("truths", truth)
-            self.all_summaries = tf.merge_all_summaries()
+            tf.summary.histogram("guesses", self.model_guess)
+            tf.summary.histogram("truths", truth)
+            self.all_summaries = tf.summary.merge_all()
 
     def message_rnn(self, x, w, b):
         """
@@ -109,7 +110,7 @@ class ChatGuesserModel:
         t_mean = tf.reduce_mean(t)
         t_stddev = tf.sqrt(tf.reduce_mean(tf.square(t - t_mean)))
 
-        tf.scalar_summary(t.name + "/mean", t_mean)
-        tf.scalar_summary(t.name + "/stddev", t_stddev)
-        tf.scalar_summary(t.name + "/max", tf.reduce_max(t))
-        tf.scalar_summary(t.name + "/min", tf.reduce_min(t))
+        tf.summary.scalar(t.name + "/mean", t_mean)
+        tf.summary.scalar(t.name + "/stddev", t_stddev)
+        tf.summary.scalar(t.name + "/max", tf.reduce_max(t))
+        tf.summary.scalar(t.name + "/min", tf.reduce_min(t))
