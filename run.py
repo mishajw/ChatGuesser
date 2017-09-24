@@ -13,6 +13,7 @@ now = datetime.now()
 
 parser = argparse.ArgumentParser(
     description="Recurrent Neural Network that trains to guess the sender of a message")
+parser.add_argument("--data-path", type=str, required=True)
 parser.add_argument("--batch-size", type=int, default=64)
 parser.add_argument("--training-percentage", type=float, default=0.75)
 parser.add_argument("--display-step", type=int, default=100)
@@ -29,6 +30,7 @@ parser.add_argument("--class-amount", type=int, default=6)
 def main():
     args = parser.parse_args()
 
+    data_path = args.data_path
     path = args.save_dir
     checkpoint_path = path + "/model.ckpt"
     max_sequence_length = args.max_sequence_length
@@ -54,7 +56,7 @@ def main():
         step = 1
 
         inputs, outputs, test_inputs, test_outputs = \
-            data.get_data(training_percentage, max_sequence_length, max_data_amount)
+            data.get_data(data_path, training_percentage, max_sequence_length, max_data_amount)
 
         summary_train_writer, summary_test_writer = get_writers(sess, path)
 

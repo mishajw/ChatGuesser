@@ -3,8 +3,6 @@
 import random
 from itertools import groupby
 
-data_path = "/home/misha/Dropbox/scala/chat-stats/all-messages.txt"
-
 
 class Data:
     def __init__(self, _input, _output):
@@ -12,10 +10,10 @@ class Data:
         self.output = _output
 
 
-def get_data(training_percentage, message_length, max_data_amount):
+def get_data(data_path, training_percentage, message_length, max_data_amount):
     print("Reading in data...")
 
-    plain_data = get_plain_data()
+    plain_data = get_plain_data(data_path)
     random.shuffle(plain_data)
     plain_data = plain_data[:max_data_amount]
     one_hot_data = get_one_hot_data(plain_data, message_length)
@@ -35,7 +33,7 @@ def get_data(training_percentage, message_length, max_data_amount):
         outputs[training_amount:]
 
 
-def get_plain_data():
+def get_plain_data(data_path):
     with open(data_path, 'r') as f:
         data = []
 
