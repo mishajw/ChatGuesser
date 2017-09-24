@@ -1,13 +1,12 @@
-import tensorflow as tf
-import numpy as np
 from datetime import datetime
-import argparse
-
-import data
 from model import ChatGuesserModel
+from typing import Tuple
+import argparse
+import data
+import numpy as np
+import tensorflow as tf
 
 now = datetime.now()
-
 
 parser = argparse.ArgumentParser(
     description="Recurrent Neural Network that trains to guess the sender of a message")
@@ -89,8 +88,8 @@ def main():
             step += 1
 
 
-def get_writers(sess, path):
-    def writer(name):
+def get_writers(sess: tf.Session, path: str) -> Tuple[tf.summary.FileWriter, tf.summary.FileWriter]:
+    def writer(name: str) -> tf.summary.FileWriter:
         return tf.summary.FileWriter(
             path + "/" + name,
             sess.graph)

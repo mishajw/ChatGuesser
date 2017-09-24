@@ -1,14 +1,15 @@
-import random
 from itertools import groupby
+from typing import List, Any
+import random
 
 
 class Data:
-    def __init__(self, _input, _output):
+    def __init__(self, _input: Any, _output: Any):
         self.input = _input
         self.output = _output
 
 
-def get_data(data_path, training_percentage, message_length, max_data_amount):
+def get_data(data_path: str, training_percentage: float, message_length: int, max_data_amount: int):
     print("Reading in data...")
 
     plain_data = get_plain_data(data_path)
@@ -31,7 +32,7 @@ def get_data(data_path, training_percentage, message_length, max_data_amount):
         outputs[training_amount:]
 
 
-def get_plain_data(data_path):
+def get_plain_data(data_path: str) -> List[Data]:
     with open(data_path, 'r') as f:
         data = []
 
@@ -45,7 +46,7 @@ def get_plain_data(data_path):
     return data
 
 
-def get_one_hot_data(plain_data, message_length):
+def get_one_hot_data(plain_data: List[Data], message_length: int) -> List[Data]:
     one_hot_data = []
 
     name_set = list(set([d.output for d in plain_data]))
@@ -66,7 +67,7 @@ def get_one_hot_data(plain_data, message_length):
     return one_hot_data
 
 
-def get_proportional_data(one_hot_data):
+def get_proportional_data(one_hot_data: List[Data]) -> List[Data]:
     num_classes = len(one_hot_data[0].input)
 
     one_hot_data.sort(key=lambda d: d.output)
@@ -83,7 +84,7 @@ def get_proportional_data(one_hot_data):
     return proportional_data
 
 
-def one_hot(x, amount):
+def one_hot(x: int, amount: int) -> List[int]:
     vec = [0] * amount
     if x >= amount:
         return vec

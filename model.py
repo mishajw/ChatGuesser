@@ -1,5 +1,5 @@
-import tensorflow as tf
 from tensorflow.python.ops import rnn
+import tensorflow as tf
 
 
 class ChatGuesserModel:
@@ -26,8 +26,12 @@ class ChatGuesserModel:
         softmax_weights = tf.Variable(tf.random_normal([self.num_hidden, self.class_amount]), name="softmax_weights")
         softmax_biases = tf.Variable(tf.random_normal([self.class_amount]), name="softmax_biases")
 
+        # Convert the variables to tensors for correct type hinting
+        softmax_weights = tf.convert_to_tensor(softmax_weights)
+        softmax_biases = tf.convert_to_tensor(softmax_biases)
+
         # Get the prediction
-        logits = self.message_rnn(self.messages, softmax_weights, softmax_biases)
+        logits = self.__message_rnn(self.messages, softmax_weights, softmax_biases)
 
         # Get the cost of the prediction
         softmax = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=self.senders)
@@ -47,18 +51,18 @@ class ChatGuesserModel:
         with tf.name_scope("summaries"):
             tf.summary.scalar("cost", self.cost)
             tf.summary.scalar("accuracy", self.accuracy)
-            self.tensor_summary(softmax_weights)
-            self.tensor_summary(softmax_biases)
+            self.__tensor_summary(softmax_weights)
+            self.__tensor_summary(softmax_biases)
             tf.summary.histogram("guesses", self.model_guess)
             tf.summary.histogram("truths", truth)
             self.all_summaries = tf.summary.merge_all()
 
-    def message_rnn(self, x, w, b):
+    def __message_rnn(self, _input: tf.Tensor, weights: tf.Tensor, biases: tf.Tensor) -> tf.Tensor:
         """
         Get an RNN for dealing with messages
-        :param x: `Tensor` of messages
-        :param w: `Tensor` of weights for softmax
-        :param b: `Tensor` of biases for softmax
+        :param _input: `Tensor` of messages
+        :param weights: `Tensor` of weights for softmax
+        :param biases: `Tensor` of biases for softmax
         :return: the prediction for each message
         """
 
@@ -68,13 +72,14 @@ class ChatGuesserModel:
                 return tf.nn.rnn_cell.DropoutWrapper(lstm_cell, self.dropout)
 
             multi_cell = tf.nn.rnn_cell.MultiRNNCell([new_cell() for _ in range(self.num_layers)], state_is_tuple=True)
-            outputs, state = rnn.dynamic_rnn(multi_cell, x, dtype=tf.float32, sequence_length=self.real_length(x))
+            outputs, state = rnn.dynamic_rnn(
+                multi_cell, _input, dtype=tf.float32, sequence_length=self.__real_length(_input))
 
-            output = self.get_last_output(outputs)
-            return tf.matmul(output, w) + b
+            output = self.__get_last_output(outputs)
+            return tf.matmul(output, weights) + biases
 
     @staticmethod
-    def get_last_output(outputs):
+    def __get_last_output(outputs: tf.Tensor) -> tf.Tensor:
         """
         Get the last output of each element in outputs
         Members of outputs may be zero-padded at the end
@@ -90,7 +95,7 @@ class ChatGuesserModel:
             return tf.nn.embedding_lookup(outputs_rs, last_index)
 
     @staticmethod
-    def real_length(sequence):
+    def __real_length(sequence: tf.Tensor) -> tf.Tensor:
         """
         Get the real length of every element in `sequence`
         `sequence` may be zero-padded at end
@@ -105,9 +110,9 @@ class ChatGuesserModel:
             return length
 
     @staticmethod
-    def tensor_summary(t):
+    def __tensor_summary(t: tf.Tensor):
         t_mean = tf.reduce_mean(t)
-        t_stddev = tf.sqrt(tf.reduce_mean(tf.square(t - t_mean)))
+        t_stddev = tf.sqrt(tf.reduce_mean(tf.square(tf.subtract(t, t_mean))))
 
         tf.summary.scalar(t.name + "/mean", t_mean)
         tf.summary.scalar(t.name + "/stddev", t_stddev)
