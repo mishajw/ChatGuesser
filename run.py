@@ -22,6 +22,8 @@ parser.add_argument("--rnn-layers", type=int, default=4)
 parser.add_argument("--max-data-amount", type=int, default=int(1e6))
 parser.add_argument("--save-dir", type=str, default="/tmp/tb_chat_guesser/" + now.strftime("%Y%m%d-%H%M%S"))
 parser.add_argument("--class-amount", type=int, default=6)
+parser.add_argument("--use-gpu", type=bool, default=False)
+parser.add_argument("--gpu-name", type=str, default="/gpu:0")
 
 
 def main():
@@ -36,8 +38,14 @@ def main():
     display_step = args.display_step
     save_step = args.save_step
     max_data_amount = args.max_data_amount
+    use_gpu = args.use_gpu
+    gpu_name = args.gpu_name
 
-    model = ChatGuesserModel(args)
+    if use_gpu:
+        with tf.device(gpu_name):
+            model = ChatGuesserModel(args)
+    else:
+        model = ChatGuesserModel(args)
 
     saver = tf.train.Saver()
     checkpoint = tf.train.get_checkpoint_state(checkpoint_path)
