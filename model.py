@@ -70,7 +70,7 @@ class ChatGuesserModel:
                 lstm_cell = rnn_cell.BasicLSTMCell(self.num_hidden, state_is_tuple=True, forget_bias=1.0)
                 return rnn_cell.DropoutWrapper(lstm_cell, self.dropout)
 
-            multi_cell = rnn_cell.MultiRNNCell([new_cell()] * self.num_layers, state_is_tuple=True)
+            multi_cell = rnn_cell.MultiRNNCell([new_cell() for _ in range(self.num_layers)], state_is_tuple=True)
             outputs, state = rnn.dynamic_rnn(multi_cell, x, dtype=tf.float32, sequence_length=self.real_length(x))
 
             output = self.get_last_output(outputs)
