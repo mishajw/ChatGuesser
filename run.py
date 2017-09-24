@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import tensorflow as tf
 import numpy as np
 from datetime import datetime

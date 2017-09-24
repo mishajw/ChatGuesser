@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import tensorflow as tf
 from tensorflow.python.ops import rnn
 from tensorflow.contrib.rnn.python.ops import core_rnn_cell_impl as rnn_cell
